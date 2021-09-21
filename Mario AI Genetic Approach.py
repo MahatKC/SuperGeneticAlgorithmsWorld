@@ -10,7 +10,7 @@ import sys
 from pyboy import PyBoy, WindowEvent
 import json
 
-#Push up
+#PUSH UP
 #TO-DO LIST:
 # Arrumar fork X
 # Arrumar crossover
