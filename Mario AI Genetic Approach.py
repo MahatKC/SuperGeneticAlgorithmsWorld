@@ -10,18 +10,25 @@ import sys
 from pyboy import PyBoy, WindowEvent
 import json
 
-#maoe
-#a Amanda não conhece o MAOE
-style.use("ggplot")
+#TO-DO LIST:
+# Arrumar fork
+# Arrumar crossover
+# Reavaliar ações
+### Checar documentação dos inputs no pyboy
+# Função de mutação
+### Checar slides da Adriana e ver como mutação geralmente acontece
+### Avaliar viabilidade de implementar a mutação do paper
+# Grid search
 
-classes = 10
-batch_size = 64
+style.use("ggplot")     #matplotlib style
+
 population = 5
-generations = 5
-threshold = 100000
+generations = 100
+mutation_rate = 0.2
+threshold = 100000      #o que ser??
 
 
-games = 800
+games = 800         #tamanho do cromossomo (numero de ações)
 time_h = 0
 lucro0 = 0
 
@@ -31,7 +38,7 @@ class environment:
         filename = 'roms/Super Mario Land.gb'
         quiet = "--quiet" in sys.argv
         self.pyboy = PyBoy(filename, window_type="headless" if quiet else "SDL2", window_scale=3, debug=quiet, game_wrapper=True)
-        self.pyboy.set_emulation_speed(1)
+        self.pyboy.set_emulation_speed(1)       #velocidade de emulação
         assert self.pyboy.cartridge_title() == "SUPER MARIOLAN"
 
         self.mario = self.pyboy.game_wrapper()
@@ -48,16 +55,13 @@ class environment:
         #set state and action size
         self.action_size = 5 #number of possible actions
         state_full = np.asarray(self.mario.game_area())
-        np.append(state_full,self.mario.level_progress)
-        self.state_size = state_full.size
-
-        #print(self.mario)        
-        
+        np.append(state_full,self.mario.level_progress) #talvez usar o append corretamente
+        self.state_size = state_full.size     
+              
     def reset(self):
         self.mario.reset_game() #back to the last state saved
         self.done = False
         self.pyboy.tick()
-        #assert self.mario.fitness == 0 # A built-in fitness score for AI development
         assert self.mario.lives_left == 2
         self.position = self.mario.level_progress
         state_full = np.asarray(self.mario.game_area())
@@ -68,7 +72,7 @@ class environment:
     def step(self,action):
         if action == 0:
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            self.time = 50
+            self.time = 5
         elif action == 1:
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
             self.time = 5
@@ -86,8 +90,6 @@ class environment:
             self.time = 5
                  
         return action, self.time
-
-
 
 class Network():
     def __init__(self):
@@ -111,7 +113,6 @@ class Network():
 
 def init_networks(population):
     return [Network() for _ in range(population)]
-
 
 def fitness(networks):
     for network in networks:
@@ -189,10 +190,10 @@ def selection(networks):
 
     return networks
 
-
 def crossover(networks):
+    #MODIFICAR CROSSOVER PRA FAZER DIREITO
     offspring = []    
-    for _ in range(int((population - len(networks)) / 2)):
+    for _ in range(population//2):
         parent1 = random.choice(networks)
         parent2 = random.choice(networks)
         child1 = Network()
@@ -220,7 +221,7 @@ def mutate(networks):
     for network in networks[2:]:
         for _ in range(0,int(games/2)):
             val = np.random.uniform(0, 1)
-            if val <= 0.2: #mutation chance
+            if val <= mutation_rate: #mutation chance
                 idx = np.random.randint(0,len(network.actions))
                 network.actions[idx] = np.random.randint(0,3)
 
