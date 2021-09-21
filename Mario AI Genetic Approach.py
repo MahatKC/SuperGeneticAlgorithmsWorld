@@ -1,3 +1,4 @@
+#Amanda Israel Graeff Borges, Lucas Veit de Sá e Mateus Karvat Camara
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -10,7 +11,6 @@ import sys
 from pyboy import PyBoy, WindowEvent
 import json
 
-#PUSH UP
 #TO-DO LIST:
 # Arrumar fork X
 # Arrumar crossover
@@ -29,7 +29,7 @@ mutation_rate = 0.2
 threshold = 100000      #o que ser??
 
 
-games = 800         #tamanho do cromossomo (numero de ações)
+cromossome_size = 800         #tamanho do cromossomo (numero de ações)
 time_h = 0
 lucro0 = 0
 
@@ -97,7 +97,7 @@ class Network():
         self.actions = []
         self.generation = 0
         #generate random actions
-        for i in range(games):
+        for i in range(cromossome_size):
             #self.action = env.action_space.sample()
             self.action = random.randint(0,5)
             self.actions.append(self.action)
@@ -177,22 +177,19 @@ def fitness(networks):
         network.lucro = fitness
         
         print('Lucro Total: {}'.format(network.lucro))
-        
-        #except:
-        #network.lucro = 0
-        #print('Build failed.')
 
         env.pyboy.stop()
     return networks
 
 def selection(networks):
+    # Ordena os membros da população com base em seu lucro
     networks = sorted(networks, key=lambda network: network.lucro, reverse=True)
+    # Seleciona os 20% melhores daquela população
     networks = networks[:int(0.2 * len(networks))]
 
     return networks
 
 def crossover(networks):
-    #MODIFICAR CROSSOVER PRA FAZER DIREITO
     offspring = []    
     for _ in range(population//2):
         parent1 = random.choice(networks)
@@ -200,16 +197,17 @@ def crossover(networks):
         child1 = Network()
         child2 = Network()
 
-        # Crossing over parent params
-        p1 = int(len(parent1.actions)/2)
-        p2 = int(len(parent2.actions)/2)
-        a = parent1.actions[:p1]
-        b = parent2.actions[:p2]
-        new_actions = a + b 
-        child1.actions = new_actions
+        # Escolha aleatória do ponto de crossover
+        n = np.random.randint(0,cromossome_size)
+
+        # Crossover dos pais
+        p1_beginning = parent1.actions[:n]
+        p1_end = parent1.acions[n:]
+        p2_beginning = parent2.actions[:n]
+        p2_end = parent2.acions[n:]
         
-        new_actions2 = b + a
-        child2.actions = new_actions2
+        child1.actions = p1_beginning+p2_end
+        child2.actions = p2_beginning+p1_end
 
         offspring.append(child1)
         offspring.append(child2)
@@ -219,8 +217,9 @@ def crossover(networks):
 
 
 def mutate(networks):
+    # Mutação
     for network in networks[2:]:
-        for _ in range(0,int(games/2)):
+        for _ in range(0,int(cromossome_size/2)):
             val = np.random.uniform(0, 1)
             if val <= mutation_rate: #mutation chance
                 idx = np.random.randint(0,len(network.actions))
@@ -246,7 +245,6 @@ def main():
         data = None
 
     for gen in range(generations):
-        #env.render()
         print ('Generation {}'.format(gen+1))
 
         #action
@@ -261,7 +259,6 @@ def main():
                 print ('Threshold met')
                 print (network.get_actions())
                 print ('Best lucro: {}'.format(network.lucro))
-                #env.close()
                 exit(0)
 
         #Genetic
