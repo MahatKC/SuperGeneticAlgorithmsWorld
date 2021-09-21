@@ -11,6 +11,7 @@ from pyboy import PyBoy, WindowEvent
 import json
 
 #maoe
+#a Amanda não conhece o MAOE
 style.use("ggplot")
 
 classes = 10
