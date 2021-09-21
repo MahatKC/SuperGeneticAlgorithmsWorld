@@ -1,5 +1,6 @@
 #Amanda Israel Graeff Borges, Lucas Veit de Sá e Mateus Karvat Camara
 import numpy as np
+from numpy.random import default_rng
 import matplotlib.pyplot as plt
 import pickle
 from matplotlib import style
@@ -24,10 +25,11 @@ import json
 style.use("ggplot")     #matplotlib style
 
 population = 5
+emulation_speed = 10
 generations = 100
 mutation_rate = 0.2
+selection_percentage = 0.2  #porcentagem dos melhores membros da população que irão pra próxima geração
 threshold = 100000      #o que ser??
-
 
 cromossome_size = 800         #tamanho do cromossomo (numero de ações)
 time_h = 0
@@ -39,7 +41,7 @@ class environment:
         filename = 'roms/Super Mario Land.gb'
         quiet = "--quiet" in sys.argv
         self.pyboy = PyBoy(filename, window_type="headless" if quiet else "SDL2", window_scale=3, debug=quiet, game_wrapper=True)
-        self.pyboy.set_emulation_speed(1)       #velocidade de emulação
+        self.pyboy.set_emulation_speed(emulation_speed)       #velocidade de emulação
         assert self.pyboy.cartridge_title() == "SUPER MARIOLAN"
 
         self.mario = self.pyboy.game_wrapper()
@@ -98,7 +100,6 @@ class Network():
         self.generation = 0
         #generate random actions
         for i in range(cromossome_size):
-            #self.action = env.action_space.sample()
             self.action = random.randint(0,5)
             self.actions.append(self.action)
 
@@ -184,14 +185,16 @@ def fitness(networks):
 def selection(networks):
     # Ordena os membros da população com base em seu lucro
     networks = sorted(networks, key=lambda network: network.lucro, reverse=True)
-    # Seleciona os 20% melhores daquela população
-    networks = networks[:int(0.2 * len(networks))]
+    # Seleciona os selection_percentage % melhores daquela população
+    networks = networks[:int(selection_percentage * population)]
 
     return networks
 
 def crossover(networks):
-    offspring = []    
-    for _ in range(population//2):
+    children = []   
+    num_pares_filhos = int(population*((1-selection_percentage)/2)) 
+    #print(num_pares_filhos)
+    for _ in range(num_pares_filhos):
         parent1 = random.choice(networks)
         parent2 = random.choice(networks)
         child1 = Network()
@@ -202,28 +205,29 @@ def crossover(networks):
 
         # Crossover dos pais
         p1_beginning = parent1.actions[:n]
-        p1_end = parent1.acions[n:]
+        p1_end = parent1.actions[n:]
         p2_beginning = parent2.actions[:n]
-        p2_end = parent2.acions[n:]
+        p2_end = parent2.actions[n:]
         
         child1.actions = p1_beginning+p2_end
         child2.actions = p2_beginning+p1_end
 
-        offspring.append(child1)
-        offspring.append(child2)
+        children.append(child1)
+        children.append(child2)
         
-    networks.extend(offspring)
+    networks.extend(children)
     return networks
 
 
 def mutate(networks):
     # Mutação
-    for network in networks[2:]:
-        for _ in range(0,int(cromossome_size/2)):
-            val = np.random.uniform(0, 1)
-            if val <= mutation_rate: #mutation chance
-                idx = np.random.randint(0,len(network.actions))
-                network.actions[idx] = np.random.randint(0,3)
+    num_old_members = int(population*selection_percentage)
+    rng = default_rng()
+    for network in networks[num_old_members:]:
+        num_genes_mutados = int(cromossome_size*mutation_rate)
+        genes_sorteados = rng.choice(cromossome_size, size=num_genes_mutados, replace=False)
+        for gene in genes_sorteados:
+            network.actions[gene] = np.random.randint(0,3)
 
     return networks
 
@@ -263,9 +267,12 @@ def main():
 
         #Genetic
         networks = selection(networks)
+        print(len(networks))
         #best_networks.append(networks)
         networks = crossover(networks)
+        print(len(networks))
         networks = mutate(networks)
+        print(len(networks))
                 
         print ('Best Fitness: {}'.format(max(network_lucro)))
         best_lucro_nets.append(max(network_lucro))
