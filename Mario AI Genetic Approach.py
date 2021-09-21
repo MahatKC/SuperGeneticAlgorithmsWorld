@@ -11,13 +11,13 @@ from pyboy import PyBoy, WindowEvent
 import json
 
 #TO-DO LIST:
-# Arrumar fork
+# Arrumar fork X
 # Arrumar crossover
-# Reavaliar ações
-### Checar documentação dos inputs no pyboy
+# Reavaliar ações 
+### Checar documentação dos inputs no pyboy X
 # Função de mutação
-### Checar slides da Adriana e ver como mutação geralmente acontece
-### Avaliar viabilidade de implementar a mutação do paper
+### Checar slides da Adriana e ver como mutação geralmente acontece X
+### Avaliar viabilidade de implementar a mutação do paper X
 # Grid search
 
 style.use("ggplot")     #matplotlib style
