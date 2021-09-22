@@ -33,7 +33,6 @@ class environment:
         assert self.mario.fitness == 0 # A built-in fitness score for AI development
         
         #set state and action size
-        self.action_size = 5 #number of possible actions
         state_full = np.asarray(self.mario.game_area())
         np.append(state_full,self.mario.level_progress) #talvez usar o append corretamente
         self.state_size = state_full.size     
@@ -99,11 +98,9 @@ class environment:
 
 class Network():
     def __init__(self, cromossome_size):
-        self.actions = []
-        self.generation = 0
-
         # Gera cromossomo com sequência aleatória de ações
-        self.action = np.random.randint(0, 10, size=cromossome_size).tolist()
+        self.actions = np.random.randint(0, 10, size=cromossome_size).tolist()
+        self.generation = 0
 
         self.lucro = 0
 
@@ -123,7 +120,6 @@ def fitness(networks):
         #init env
         env = environment()
         state_size = env.state_size
-        action_size = env.action_size
         fitness = env.mario.fitness
         state = env.reset()
         state = np.reshape(state, [1, state_size])
@@ -131,8 +127,6 @@ def fitness(networks):
         actions = network.get_actions()
         
         # loop through actions
-        print(actions)
-        print(type(actions))
         for act in actions:
             try:
                 #16,17,18,19,27,26
@@ -223,10 +217,11 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
     rng = default_rng()
     indices_populacao = np.arange(population)[num_old_members:]
     mutated_networks = rng.choice(indices_populacao, size=int(len(indices_populacao)*mutation_probability), replace=False).tolist()
-    for network in networks[mutated_networks]:
+    for network_idx in mutated_networks:
         num_genes_mutados = int(cromossome_size*mutation_rate)
         genes_sorteados = rng.choice(cromossome_size, size=num_genes_mutados, replace=False)
         for gene in genes_sorteados:
+            network = networks[network_idx]
             network.actions[gene] = np.random.randint(10)
 
     return networks
@@ -234,7 +229,6 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
 def run(run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size):
     lucro_nets = []
     best_lucro_nets = []
-    best_networks = []
     lucro_nets_media = []
     
     networks = init_networks(population, cromossome_size)
@@ -242,6 +236,7 @@ def run(run_name, population, generations, self_crossover, mutation_rate, mutati
     writer = SummaryWriter(log_dir='runs/'+run_name)
 
     for gen in range(generations):
+        t0=time.time()
         #print (f'Generation {gen+1}')
 
         #action
@@ -266,21 +261,24 @@ def run(run_name, population, generations, self_crossover, mutation_rate, mutati
         print (f"Best Fitness: {max_lucro}")
         lucro_nets_media.append(media)
         #print (f"Average Fitness: {media}\n")
+        t1=time.time()
+        execution_time = np.round(t1-t0, 4)
 
-    grid_search_df = pd.DataFrame({'run_name': [run_name],
-                               'population': [population],
-                               'generations':[generations],
-                               'self_crossover': [str(self_crossover)],
-                               'mutation_rate': [mutation_rate],
-                               'mutation_probability': [mutation_probability],
-                               'selection_percentage': [selection_percentage],
-                               'cromossome_size': [cromossome_size],
-                               'best_result': [max_lucro]
-                               })
+        grid_search_df = pd.DataFrame({'run_name': [run_name],
+                                'population': [population],
+                                'generations':[generations],
+                                'self_crossover': [str(self_crossover)],
+                                'mutation_rate': [mutation_rate],
+                                'mutation_probability': [mutation_probability],
+                                'selection_percentage': [selection_percentage],
+                                'cromossome_size': [cromossome_size],
+                                'best_result': [max_lucro],
+                                'tempo': [execution_time]
+                                })
 
-    file_df = pd.read_csv("grid_search.csv")
-    file_df = file_df.append(grid_search_df)
-    file_df.to_csv("grid_search.csv",index=False)
+        #file_df = pd.read_csv("grid_search.csv")
+        #file_df = file_df.append(grid_search_df)
+        grid_search_df.to_csv("grid_search.csv",index=False)
     writer.close()
     writer.flush()
 
