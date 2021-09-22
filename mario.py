@@ -10,6 +10,9 @@ from pyboy import PyBoy, WindowEvent
 import json
 from torch.utils.tensorboard import SummaryWriter
 
+#PET PC
+#set PYSDL2_DLL_PATH=C:\Program Files\kdenlive\bin
+
 emulation_speed = 5
 
 class environment:
@@ -231,6 +234,9 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
     return networks
 
 def run(iteration, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size):
+    print(f"Run {iteration}")
+    print("-"*10)
+
     lucro_nets = []
     best_lucro_nets = []
     lucro_nets_media = []
@@ -265,26 +271,26 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         print (f"Best Fitness: {max_lucro}")
         lucro_nets_media.append(media)
         #print (f"Average Fitness: {media}\n")
-        t1=time.time()
-        execution_time = np.round(t1-t0, 4)
-
-        grid_search_df = pd.DataFrame({'run_name': [run_name],
-                                'population': [population],
-                                'generations':[generations],
-                                'self_crossover': [str(self_crossover)],
-                                'mutation_rate': [mutation_rate],
-                                'mutation_probability': [mutation_probability],
-                                'selection_percentage': [selection_percentage],
-                                'cromossome_size': [cromossome_size],
-                                'best_result': [max_lucro],
-                                'tempo': [execution_time]
-                                })
-        if iteration==0:
-            grid_search_df.to_csv("grid_search.csv",index=False)
-        else:
-            file_df = pd.read_csv("grid_search.csv")
-            file_df = file_df.append(grid_search_df)
-            file_df.to_csv("grid_search.csv",index=False)
+        
+    t1=time.time()
+    execution_time = np.round(t1-t0, 4)
+    grid_search_df = pd.DataFrame({'run_name': [run_name],
+                            'population': [population],
+                            'generations':[generations],
+                            'self_crossover': [str(self_crossover)],
+                            'mutation_rate': [mutation_rate],
+                            'mutation_probability': [mutation_probability],
+                            'selection_percentage': [selection_percentage],
+                            'cromossome_size': [cromossome_size],
+                            'best_result': [max_lucro],
+                            'tempo': [execution_time]
+                            })
+    if iteration==0:
+        grid_search_df.to_csv("grid_search.csv",index=False)
+    else:
+        file_df = pd.read_csv("grid_search.csv")
+        file_df = file_df.append(grid_search_df)
+        file_df.to_csv("grid_search.csv",index=False)
     writer.close()
     writer.flush()
 
@@ -308,8 +314,6 @@ def main():
                                 run_name = "run"+str(i)
                                 run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size)
                                 i+=1
-                                if i%10==0:
-                                    print(f"Iteração {i}")
 
 if __name__ == '__main__':
     main()
