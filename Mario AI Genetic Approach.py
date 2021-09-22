@@ -226,7 +226,7 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
 
     return networks
 
-def run(run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size):
+def run(iteration, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size):
     lucro_nets = []
     best_lucro_nets = []
     lucro_nets_media = []
@@ -275,10 +275,12 @@ def run(run_name, population, generations, self_crossover, mutation_rate, mutati
                                 'best_result': [max_lucro],
                                 'tempo': [execution_time]
                                 })
-
-        #file_df = pd.read_csv("grid_search.csv")
-        #file_df = file_df.append(grid_search_df)
-        grid_search_df.to_csv("grid_search.csv",index=False)
+        if iteration==0:
+            grid_search_df.to_csv("grid_search.csv",index=False)
+        else:
+            file_df = pd.read_csv("grid_search.csv")
+            file_df = file_df.append(grid_search_df)
+            file_df.to_csv("grid_search.csv",index=False)
     writer.close()
     writer.flush()
 
@@ -300,7 +302,7 @@ def main():
                         for selection_percentage in selection_percentage_values:
                             for cromossome_size in cromossome_size_values:
                                 run_name = "run"+str(i)
-                                run(run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size)
+                                run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size)
                                 i+=1
                                 if i%10==0:
                                     print(f"Iteração {i}")
