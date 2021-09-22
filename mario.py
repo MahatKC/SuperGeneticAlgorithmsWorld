@@ -134,7 +134,11 @@ def fitness(networks):
         
         # loop through actions
         vidas = env.mario.lives_left
+        action_counter = 0
         for act in actions:
+            if action_counter == len(actions)-1:
+                print("Ultima ação!!!")
+
             try:
                 filteredMario = [x for x in list(state[0]) if (x>10 and x<30)]
                 index_mario = list(state[0]).index(filteredMario[0])
@@ -172,6 +176,8 @@ def fitness(networks):
                 break
             
             vidas = env.mario.lives_left
+
+            action_counter+=1
         network.lucro = fitness
 
         env.pyboy.stop()
@@ -291,6 +297,7 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         file_df = pd.read_csv("grid_search.csv")
         file_df = file_df.append(grid_search_df)
         file_df.to_csv("grid_search.csv",index=False)
+        
     writer.close()
     writer.flush()
 
@@ -315,7 +322,7 @@ def main():
     mutation_rate_values = [0.001, 0.01, 0.1] #0.005, 0.05, 0.2
     mutation_probability_values = [1, 0.1, 0] #0.5
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
-    cromossome_size_values = [2000, 5000, 10000]      #tamanho do cromossomo (numero de ações)
+    cromossome_size_values = [2000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     run_name="run"
     i=0
     for population in population_values:
