@@ -11,25 +11,17 @@ import os
 import sys
 from pyboy import PyBoy, WindowEvent
 import json
-
-#TO-DO LIST:
-# Arrumar fork X
-# Arrumar crossover
-# Reavaliar ações 
-### Checar documentação dos inputs no pyboy X
-# Função de mutação
-### Checar slides da Adriana e ver como mutação geralmente acontece X
-### Avaliar viabilidade de implementar a mutação do paper X
-# Grid search
+from torch.utils.tensorboard import SummaryWriter
 
 style.use("ggplot")     #matplotlib style
 
-population = 5
+population = 10
 emulation_speed = 10
 generations = 100
+self_crossover = True
 mutation_rate = 0.2
 selection_percentage = 0.2  #porcentagem dos melhores membros da população que irão pra próxima geração
-threshold = 100000      #o que ser??
+threshold = 100000   #o que ser??
 
 cromossome_size = 800         #tamanho do cromossomo (numero de ações)
 time_h = 0
@@ -98,10 +90,9 @@ class Network():
     def __init__(self):
         self.actions = []
         self.generation = 0
-        #generate random actions
-        for i in range(cromossome_size):
-            self.action = random.randint(0,5)
-            self.actions.append(self.action)
+
+        # Gera cromossomo com sequência aleatória de ações
+        self.action = random.randint(5, size=cromossome_size).tolist()
 
         self.lucro = 0
 
@@ -192,11 +183,16 @@ def selection(networks):
 
 def crossover(networks):
     children = []   
-    num_pares_filhos = int(population*((1-selection_percentage)/2)) 
-    #print(num_pares_filhos)
+    num_pares_filhos = int(population*((1-selection_percentage)/2))
     for _ in range(num_pares_filhos):
         parent1 = random.choice(networks)
         parent2 = random.choice(networks)
+
+        if not self_crossover:
+            while parent1==parent2:
+                parent1 = random.choice(networks)
+                parent2 = random.choice(networks)
+
         child1 = Network()
         child2 = Network()
 
@@ -231,14 +227,14 @@ def mutate(networks):
 
     return networks
 
-
-def main():
+def run(run_name):
     lucro_nets = []
     best_lucro_nets = []
     best_networks = []
     lucro_nets_media = []
     
     networks = init_networks(population)
+    """
     #load best from the past
     try:
         with open('genetic_best_network_mario.json') as json_file:
@@ -247,9 +243,12 @@ def main():
     except:
         print('Error to load')
         data = None
+    """
+    
+    writer = SummaryWriter(log_dir='runs/'+run_name)
 
     for gen in range(generations):
-        print ('Generation {}'.format(gen+1))
+        print (f'Generation {gen+1}')
 
         #action
         networks = fitness(networks)
@@ -267,39 +266,62 @@ def main():
 
         #Genetic
         networks = selection(networks)
-        print(len(networks))
-        #best_networks.append(networks)
         networks = crossover(networks)
-        print(len(networks))
         networks = mutate(networks)
-        print(len(networks))
                 
-        print ('Best Fitness: {}'.format(max(network_lucro)))
-        best_lucro_nets.append(max(network_lucro))
-        #print(network_lucro)
-        media = sum(network_lucro)/len(network_lucro)
-        print ('Average Fitness: {}'.format(media))
+        max_lucro = np.max(network_lucro)
+        media = np.average(network_lucro)
+        writer.add_scalar('Lucro/Máximo', max_lucro, gen+1)
+        writer.add_scalar('Lucro/Média', media, gen+1)
+        best_lucro_nets.append(max_lucro)
+        print (f"Best Fitness: {max_lucro}")
         lucro_nets_media.append(media)
-        print("")
+        print (f"Average Fitness: {media}\n")
 
+    """
+    population
+    generations
+    self_crossover
+    mutation_rate
+    selection_percentage
+    cromossome_size
+    best_result
+    """
+
+    grid_search_df = pd.DataFrame({'layer_type': ["Linear"],
+                               'layers': ["(10, 20), (20, 20), (10, 3)"],
+                               'num_trainable_params':['630'],
+                               'time': [str(round(t1-t0,3))],
+                               'activation': ["TanH"],
+                               'optimizer': ["Adam"],
+                               'optimizer_params': ["actual weight_decay="+str(WEIGHT_DECAY)],
+                               'learning_rate': ["actual learning_rate="+str(LEARNING_RATE)],
+                               'loss_func': ["MSELoss"],
+                               'activate_dropout': [str(ACTIVATE_DROPOUT)],
+                               'dropout_rate': [str(DROPOUT_RATE)],
+                               'num_epochs': [str(NUM_EPOCHS)],
+                               'batch_size': [str(BATCH_SIZE)],
+                               'train_accuracy': [str(round(batchNet.accuracy(train),4))],
+                               'val_accuracy': [str(round(batchNet.accuracy(val),4))]
+                               })
+
+    file_df = pd.read_csv("grid_search.csv")
+    file_df = file_df.append(grid_search_df)
+    file_df.to_csv("grid_search.csv",index=False)
+    writer.close()
+    writer.flush()
+
+    """
     #save best network
     best_net = {'actions': networks[0].get_actions(),'lucro':networks[0].lucro, 'generation':networks[0].generation}
     with open('genetic_best_network_mario.json', 'w') as json_file:
         json.dump(best_net, json_file)
     json_file.close()
+    """
+
+def main():
+    run_name="run"
+    run(run_name)
                 
-    plt.subplot(211)
-    plt.plot([i for i in range(len(lucro_nets_media))], lucro_nets_media)
-    plt.plot([i for i in range(len(best_lucro_nets))], best_lucro_nets)
-    plt.ylabel(f"Average Fitness by generation")
-    plt.xlabel("Generation #")
-
-    plt.subplot(212)
-    plt.plot([i for i in range(len(lucro_nets))], lucro_nets)
-    #plt.plot([i for i in range(len(lucro_time))], lucro_time)
-
-    plt.show()
-                    
-
 if __name__ == '__main__':
     main()
