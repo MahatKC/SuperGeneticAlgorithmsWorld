@@ -250,9 +250,10 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
     networks = init_networks(population, cromossome_size)
     
     writer = SummaryWriter(log_dir='runs/'+run_name)
+    t0=time.time()
 
     for gen in range(generations):
-        t0=time.time()
+        
         #print (f'Generation {gen+1}')
 
         #action
@@ -297,7 +298,7 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         file_df = pd.read_csv("grid_search.csv")
         file_df = file_df.append(grid_search_df)
         file_df.to_csv("grid_search.csv",index=False)
-        
+
     writer.close()
     writer.flush()
 
