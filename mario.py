@@ -294,6 +294,20 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
     writer.close()
     writer.flush()
 
+    try:
+        with open('genetic_best_network_mario.json') as json_file:
+            data = json.load(json_file)
+        lucro = int(data.get('lucro'))
+    except:
+        print('Error to load')
+
+    if lucro<networks[0].lucro:
+        best_net = {'actions': networks[0].get_actions(),'lucro':networks[0].lucro, 'generation':networks[0].generation, 'grid_search_iteration': iteration}
+    
+        with open('genetic_best_network_mario.json', 'w') as json_file:
+            json.dump(best_net, json_file)
+        json_file.close()
+
 def main():
     population_values = [10, 20] #50
     generations_values = [10, 20, 50] #100
