@@ -100,6 +100,7 @@ class Network():
     def __init__(self, cromossome_size):
         # Gera cromossomo com sequência aleatória de ações
         self.actions = np.random.randint(0, 10, size=cromossome_size).tolist()
+        #self.actions = [4]*100+[0]*3+[1]+[5]+[2]*15+[3]+[0]+[5]*400
         self.generation = 0
 
         self.lucro = 0
@@ -127,13 +128,16 @@ def fitness(networks):
         actions = network.get_actions()
         
         # loop through actions
+        vidas = env.mario.lives_left
         for act in actions:
             try:
                 filteredMario = [x for x in list(state[0]) if (x>10 and x<30)]
                 index_mario = list(state[0]).index(filteredMario[0])
                 feet_val = state[0][index_mario + 20]
             except:
-                break
+                pass
+                #print(iterator)
+                #break
 
             act, tempo = env.step(act)
             
@@ -156,12 +160,11 @@ def fitness(networks):
             t = 0.0167 * tempo
             time.sleep(t)
             
-            fitness = env.mario.fitness
-            
-            if env.mario.lives_left == 1:
+            if env.mario.lives_left < vidas:
                 done = True
                 break
             
+            vidas = env.mario.lives_left
         network.lucro = fitness
 
         env.pyboy.stop()
@@ -288,7 +291,7 @@ def main():
     mutation_rate_values = [0.001, 0.01, 0.1] #0.005, 0.05, 0.2
     mutation_probability_values = [1, 0.1, 0] #0.5
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
-    cromossome_size_values = [800, 2000, 10000]      #tamanho do cromossomo (numero de ações)
+    cromossome_size_values = [2000, 5000, 10000]      #tamanho do cromossomo (numero de ações)
     run_name="run"
     i=0
     for population in population_values:
