@@ -129,7 +129,6 @@ def fitness(networks):
         # loop through actions
         for act in actions:
             try:
-                #16,17,18,19,27,26
                 filteredMario = [x for x in list(state[0]) if (x>10 and x<30)]
                 index_mario = list(state[0]).index(filteredMario[0])
                 feet_val = state[0][index_mario + 20]
@@ -164,8 +163,6 @@ def fitness(networks):
                 break
             
         network.lucro = fitness
-        
-        #print('Lucro Total: {}'.format(network.lucro))
 
         env.pyboy.stop()
     return networks

@@ -5,4 +5,4 @@ cromossome_size = 15
 
 print(type(np.random.randint(0, 10, size=cromossome_size).tolist()))
 
-
+print([10]*3+[5]*2)
