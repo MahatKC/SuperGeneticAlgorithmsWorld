@@ -162,6 +162,8 @@ def fitness(networks):
             t = 0.0167 * tempo
             time.sleep(t)
             
+            fitness = env.mario.fitness
+            
             if env.mario.lives_left < vidas:
                 done = True
                 break
