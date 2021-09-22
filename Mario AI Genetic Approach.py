@@ -1,9 +1,6 @@
 #Amanda Israel Graeff Borges, Lucas Veit de Sá e Mateus Karvat Camara
 import numpy as np
 from numpy.random import default_rng
-import matplotlib.pyplot as plt
-import pickle
-from matplotlib import style
 import time
 import pandas as pd
 import random
@@ -13,19 +10,7 @@ from pyboy import PyBoy, WindowEvent
 import json
 from torch.utils.tensorboard import SummaryWriter
 
-style.use("ggplot")     #matplotlib style
-
-population = 10
-emulation_speed = 10
-generations = 100
-self_crossover = True
-mutation_rate = 0.2
-selection_percentage = 0.2  #porcentagem dos melhores membros da população que irão pra próxima geração
-threshold = 100000   #o que ser??
-
-cromossome_size = 800         #tamanho do cromossomo (numero de ações)
-time_h = 0
-lucro0 = 0
+emulation_speed = 5
 
 class environment:
     def __init__(self):
@@ -113,12 +98,12 @@ class environment:
         return action, self.time
 
 class Network():
-    def __init__(self):
+    def __init__(self, cromossome_size):
         self.actions = []
         self.generation = 0
 
         # Gera cromossomo com sequência aleatória de ações
-        self.action = random.randint(10, size=cromossome_size).tolist()
+        self.action = np.random.randint(0, 10, size=cromossome_size).tolist()
 
         self.lucro = 0
 
@@ -130,8 +115,8 @@ class Network():
         self.lucro = lucro
         return self.lucro
 
-def init_networks(population):
-    return [Network() for _ in range(population)]
+def init_networks(population, cromossome_size):
+    return [Network(cromossome_size) for _ in range(population)]
 
 def fitness(networks):
     for network in networks:
@@ -144,21 +129,16 @@ def fitness(networks):
         state = np.reshape(state, [1, state_size])
         
         actions = network.get_actions()
-        strategies = []
-        lucro_tot = 0
         
-        #try:
-        time_h = 0
         # loop through actions
+        print(actions)
+        print(type(actions))
         for act in actions:
-            #print("action: ", act, " lives: ",env.mario.lives_left, " pos: ", env.mario.level_progress)
             try:
                 #16,17,18,19,27,26
                 filteredMario = [x for x in list(state[0]) if (x>10 and x<30)]
-                #print(filteredMario)
                 index_mario = list(state[0]).index(filteredMario[0])
                 feet_val = state[0][index_mario + 20]
-                #print('POSITION: ',state[0][index_mario], state[0][index_mario + 20])
             except:
                 break
 
@@ -180,7 +160,6 @@ def fitness(networks):
                 for _ in range(tempo):
                     env.pyboy.tick() # Progresses the emulator ahead by one frame.
                 
-            
             t = 0.0167 * tempo
             time.sleep(t)
             
@@ -190,16 +169,14 @@ def fitness(networks):
                 done = True
                 break
             
-            time_h += 1
-            
         network.lucro = fitness
         
-        print('Lucro Total: {}'.format(network.lucro))
+        #print('Lucro Total: {}'.format(network.lucro))
 
         env.pyboy.stop()
     return networks
 
-def selection(networks):
+def selection(networks, population, selection_percentage):
     # Ordena os membros da população com base em seu lucro
     networks = sorted(networks, key=lambda network: network.lucro, reverse=True)
     # Seleciona os selection_percentage % melhores daquela população
@@ -207,7 +184,7 @@ def selection(networks):
 
     return networks
 
-def crossover(networks):
+def crossover(networks, self_crossover, population, selection_percentage, cromossome_size):
     children = []   
     num_pares_filhos = int(population*((1-selection_percentage)/2))
     for _ in range(num_pares_filhos):
@@ -219,8 +196,8 @@ def crossover(networks):
                 parent1 = random.choice(networks)
                 parent2 = random.choice(networks)
 
-        child1 = Network()
-        child2 = Network()
+        child1 = Network(cromossome_size)
+        child2 = Network(cromossome_size)
 
         # Escolha aleatória do ponto de crossover
         n = np.random.randint(0,cromossome_size)
@@ -240,41 +217,32 @@ def crossover(networks):
     networks.extend(children)
     return networks
 
-
-def mutate(networks):
+def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size):
     # Mutação
     num_old_members = int(population*selection_percentage)
     rng = default_rng()
-    for network in networks[num_old_members:]:
+    indices_populacao = np.arange(population)[num_old_members:]
+    mutated_networks = rng.choice(indices_populacao, size=int(len(indices_populacao)*mutation_probability), replace=False).tolist()
+    for network in networks[mutated_networks]:
         num_genes_mutados = int(cromossome_size*mutation_rate)
         genes_sorteados = rng.choice(cromossome_size, size=num_genes_mutados, replace=False)
         for gene in genes_sorteados:
-            network.actions[gene] = np.random.randint(0,3)
+            network.actions[gene] = np.random.randint(10)
 
     return networks
 
-def run(run_name):
+def run(run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size):
     lucro_nets = []
     best_lucro_nets = []
     best_networks = []
     lucro_nets_media = []
     
-    networks = init_networks(population)
-    """
-    #load best from the past
-    try:
-        with open('genetic_best_network_mario.json') as json_file:
-            data = json.load(json_file)
-        lucro = networks[0].set_actions(data.get('actions'),data.get('lucro'))
-    except:
-        print('Error to load')
-        data = None
-    """
+    networks = init_networks(population, cromossome_size)
     
     writer = SummaryWriter(log_dir='runs/'+run_name)
 
     for gen in range(generations):
-        print (f'Generation {gen+1}')
+        #print (f'Generation {gen+1}')
 
         #action
         networks = fitness(networks)
@@ -284,16 +252,11 @@ def run(run_name):
             network.generation = gen
             network_lucro.append(network.lucro)
             lucro_nets.append(network.lucro)
-            if network.lucro > threshold:
-                print ('Threshold met')
-                print (network.get_actions())
-                print ('Best lucro: {}'.format(network.lucro))
-                exit(0)
 
         #Genetic
-        networks = selection(networks)
-        networks = crossover(networks)
-        networks = mutate(networks)
+        networks = selection(networks, population, selection_percentage)
+        networks = crossover(networks, self_crossover, population, selection_percentage, cromossome_size)
+        networks = mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size)
                 
         max_lucro = np.max(network_lucro)
         media = np.average(network_lucro)
@@ -302,33 +265,17 @@ def run(run_name):
         best_lucro_nets.append(max_lucro)
         print (f"Best Fitness: {max_lucro}")
         lucro_nets_media.append(media)
-        print (f"Average Fitness: {media}\n")
+        #print (f"Average Fitness: {media}\n")
 
-    """
-    population
-    generations
-    self_crossover
-    mutation_rate
-    selection_percentage
-    cromossome_size
-    best_result
-    """
-
-    grid_search_df = pd.DataFrame({'layer_type': ["Linear"],
-                               'layers': ["(10, 20), (20, 20), (10, 3)"],
-                               'num_trainable_params':['630'],
-                               'time': [str(round(t1-t0,3))],
-                               'activation': ["TanH"],
-                               'optimizer': ["Adam"],
-                               'optimizer_params': ["actual weight_decay="+str(WEIGHT_DECAY)],
-                               'learning_rate': ["actual learning_rate="+str(LEARNING_RATE)],
-                               'loss_func': ["MSELoss"],
-                               'activate_dropout': [str(ACTIVATE_DROPOUT)],
-                               'dropout_rate': [str(DROPOUT_RATE)],
-                               'num_epochs': [str(NUM_EPOCHS)],
-                               'batch_size': [str(BATCH_SIZE)],
-                               'train_accuracy': [str(round(batchNet.accuracy(train),4))],
-                               'val_accuracy': [str(round(batchNet.accuracy(val),4))]
+    grid_search_df = pd.DataFrame({'run_name': [run_name],
+                               'population': [population],
+                               'generations':[generations],
+                               'self_crossover': [str(self_crossover)],
+                               'mutation_rate': [mutation_rate],
+                               'mutation_probability': [mutation_probability],
+                               'selection_percentage': [selection_percentage],
+                               'cromossome_size': [cromossome_size],
+                               'best_result': [max_lucro]
                                })
 
     file_df = pd.read_csv("grid_search.csv")
@@ -337,17 +284,28 @@ def run(run_name):
     writer.close()
     writer.flush()
 
-    """
-    #save best network
-    best_net = {'actions': networks[0].get_actions(),'lucro':networks[0].lucro, 'generation':networks[0].generation}
-    with open('genetic_best_network_mario.json', 'w') as json_file:
-        json.dump(best_net, json_file)
-    json_file.close()
-    """
-
 def main():
+    population_values = [10, 20] #50
+    generations_values = [10, 20, 50] #100
+    self_crossover_values = [True, False]
+    mutation_rate_values = [0.001, 0.01, 0.1] #0.005, 0.05, 0.2
+    mutation_probability_values = [1, 0.1, 0] #0.5
+    selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
+    cromossome_size_values = [800, 2000, 10000]      #tamanho do cromossomo (numero de ações)
     run_name="run"
-    run(run_name)
-                
+    i=0
+    for population in population_values:
+        for generations in generations_values:
+            for self_crossover in self_crossover_values:
+                for mutation_rate in mutation_rate_values:
+                    for mutation_probability in mutation_probability_values:
+                        for selection_percentage in selection_percentage_values:
+                            for cromossome_size in cromossome_size_values:
+                                run_name = "run"+str(i)
+                                run(run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size)
+                                i+=1
+                                if i%10==0:
+                                    print(f"Iteração {i}")
+
 if __name__ == '__main__':
     main()
