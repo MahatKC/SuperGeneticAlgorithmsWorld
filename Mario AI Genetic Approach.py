@@ -65,24 +65,50 @@ class environment:
         return state_full
 
     def step(self,action):
-        if action == 0:
+
+        if action == 0: # Pular       
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            self.time = 5
-        elif action == 1:
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
-            self.time = 5
-        elif action == 2:
-            #self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            #time.sleep(0.1)
-            #self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
+            self.time = 2
+
+        elif action == 1: # Soltar Pular
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)
-            self.time = 5
-        elif action == 3:
+            self.time = 2
+
+        elif action == 2: # Andar para esquerda
             self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
-            self.time = 5
-        elif action == 4:
             self.pyboy.send_input(WindowEvent.PRESS_ARROW_LEFT)
-            self.time = 5
+            self.time = 2
+
+        elif action == 3: # Parar de andar para esquerda
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
+            self.time = 2
+
+        elif action == 4: # Andar para direita
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
+            self.time = 2
+
+        elif action == 5: # Parar de andar para direita
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
+            self.time = 2
+
+        elif action == 6: # Apertar Correr / Fogo
+            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_B)
+            self.time = 2
+
+        elif action == 7: # Soltar Correr / Fogo
+            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_B)
+            self.time = 2
+
+        elif action == 8: # Apertar para Baixo
+            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)
+            self.pyboy.send_input(WindowEvent.PRESS_ARROW_DOWN)
+            self.time = 2
+
+        elif action == 9: # Soltar para Baixo
+            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)
+            self.time = 2
                  
         return action, self.time
 
@@ -92,7 +118,7 @@ class Network():
         self.generation = 0
 
         # Gera cromossomo com sequência aleatória de ações
-        self.action = random.randint(5, size=cromossome_size).tolist()
+        self.action = random.randint(10, size=cromossome_size).tolist()
 
         self.lucro = 0
 
