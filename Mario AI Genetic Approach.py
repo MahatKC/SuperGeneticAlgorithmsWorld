@@ -51,10 +51,12 @@ class environment:
     def step(self,action):
 
         if action == 0: # Pular       
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)
             self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
             self.time = 2
 
         elif action == 1: # Soltar Pular
+            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)
             self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)
             self.time = 2
 
