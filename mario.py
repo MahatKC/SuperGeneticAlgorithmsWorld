@@ -137,7 +137,7 @@ def fitness(networks):
         action_counter = 0
         for act in actions:
             if action_counter == len(actions)-1:
-                print("Ultima ação!!!")
+                print(f"Ultima ação {action_counter}!!!")
 
             try:
                 filteredMario = [x for x in list(state[0]) if (x>10 and x<30)]
@@ -318,12 +318,12 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
 
 def main():
     population_values = [10, 20] #50
-    generations_values = [10, 20, 50] #100
+    generations_values = [20] #100
     self_crossover_values = [True, False]
-    mutation_rate_values = [0.001, 0.01, 0.1] #0.005, 0.05, 0.2
+    mutation_rate_values = [0.1, 0.01] #0.005, 0.05, 0.2 -> 0.001 travou em ótimo local
     mutation_probability_values = [1, 0.1, 0] #0.5
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
-    cromossome_size_values = [2000] #5000, 10000      #tamanho do cromossomo (numero de ações)
+    cromossome_size_values = [10000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     run_name="run"
     i=0
     for population in population_values:
