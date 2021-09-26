@@ -136,6 +136,7 @@ def fitness(networks):
         vidas = env.mario.lives_left
         action_counter = 0
         for act in actions:
+            t_act_ini = time.time()
             if action_counter == len(actions)-1:
                 print(f"Ultima ação {action_counter}!!!")
 
@@ -275,7 +276,7 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         writer.add_scalar('Lucro/Máximo', max_lucro, gen+1)
         writer.add_scalar('Lucro/Média', media, gen+1)
         best_lucro_nets.append(max_lucro)
-        print (f"Best Fitness: {max_lucro}")
+        print (f"Best Fitness: {max_lucro}. Generation: {gen}")
         lucro_nets_media.append(media)
         #print (f"Average Fitness: {media}\n")
         
@@ -317,13 +318,13 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         json_file.close()
 
 def main():
-    population_values = [10, 20] #50
-    generations_values = [20] #100
-    self_crossover_values = [True, False]
-    mutation_rate_values = [0.1, 0.01] #0.005, 0.05, 0.2 -> 0.001 travou em ótimo local
-    mutation_probability_values = [1, 0.1, 0] #0.5
+    population_values = [25] #50   10 -> mt pouco
+    generations_values = [10] #100
+    self_crossover_values = [False] 
+    mutation_rate_values = [0.1, 0.05] #0.001 e 0.01 travou em ótimo local
+    mutation_probability_values = [1] # 0.1, 0 muito baixos, não chegou a mutacionar mt #falta 0.5 e False p/ 0.05 e 0.1 m_r
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
-    cromossome_size_values = [10000] #5000, 10000      #tamanho do cromossomo (numero de ações)
+    cromossome_size_values = [8000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     run_name="run"
     i=0
     for population in population_values:

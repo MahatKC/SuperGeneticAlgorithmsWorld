@@ -1,0 +1,5 @@
+run_name,population,generations,self_crossover,mutation_rate,mutation_probability,selection_percentage,cromossome_size,best_result,tempo
+run0,25,10,True,0.2,1.0,0.2,8000,24370,8066.1182
+run1,25,10,True,0.2,0.5,0.2,8000,24320,21943.4514
+run2,25,10,False,0.2,1.0,0.2,8000,25670,8858.0566
+run3,25,10,False,0.2,0.5,0.2,8000,25260,16002.2484
