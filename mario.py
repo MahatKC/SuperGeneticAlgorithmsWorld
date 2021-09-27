@@ -124,7 +124,7 @@ class Network():
         self.generation = 0
         self.death_iteration = 0
 
-        self.lucro = 0
+        self.lucro = 0 #armazenar o fitness
 
     def get_actions(self):
         return self.actions
@@ -293,6 +293,8 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
         for network_idx in mutated_networks:
             num_genes_mutados = int(cromossome_size*mutation_rate)
             network = networks[network_idx]
+            
+            #limiar de mutação antes da próxima run
             death_threshold = int(network.death_iteration*0.9)
             genes_in_death_threshold = np.arange(cromossome_size)[death_threshold:]
             genes_sorteados = rng.choice(genes_in_death_threshold, size=num_genes_mutados, replace=False)
@@ -405,13 +407,13 @@ def main():
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
     cromossome_size_values = [8000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     
-    population = 25
-    generations = 40
-    self_crossover = False
-    mutation_rate = 0.05
-    mutation_probability = 0.5
-    selection_percentage = 0.2
-    cromossome_size = 8000
+    population = 25 #tamanho da população
+    generations = 40 #Número de gerações
+    self_crossover = False #Critério para crossover
+    mutation_rate = 0.05 #Taxa de mutacao
+    mutation_probability = 0.5 #probabilidade de mutacao
+    selection_percentage = 0.2 #porcentagem da seleção
+    cromossome_size = 8000 #tamanho do cromossomo (número de ações)
     i=0
     #death_mutation = True
     #reduced_action_set = False
