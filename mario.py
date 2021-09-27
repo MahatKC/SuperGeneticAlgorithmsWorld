@@ -258,8 +258,8 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
                     parent1 = random.choice(networks)
                     parent2 = random.choice(networks)
 
-            child1 = Network(cromossome_size)
-            child2 = Network(cromossome_size)
+            child1 = Network(cromossome_size, reduced_action)
+            child2 = Network(cromossome_size, reduced_action)
 
             # Escolha aleatória do ponto de crossover
             n = np.random.randint(0,cromossome_size)
@@ -295,7 +295,7 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
         for network_idx in mutated_networks:
             num_genes_mutados = int(cromossome_size*mutation_rate)
             network = networks[network_idx]
-            death_threshold = network.death_iteration-800
+            death_threshold = int(network.death_iteration*0.9)
             genes_in_death_threshold = np.arange(cromossome_size)[death_threshold:]
             genes_sorteados = rng.choice(genes_in_death_threshold, size=num_genes_mutados, replace=False)
             for gene in genes_sorteados:
@@ -407,23 +407,24 @@ def main():
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
     cromossome_size_values = [8000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     
-    population = 20
-    generations = 10
+    population = 25
+    generations = 40
     self_crossover = False
     mutation_rate = 0.05
     mutation_probability = 0.5
     selection_percentage = 0.2
     cromossome_size = 8000
-    run_name="run"
     i=0
-    death_mutation = True
-    reduced_action_set = False
-    run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    i+=1
-    death_mutation = False
-    reduced_action_set = True
-    run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    i+=1
+    #death_mutation = True
+    #reduced_action_set = False
+    #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
+    #i+=1
+    #death_mutation = False
+    #reduced_action_set = True
+    #run_name = "run"+str(i)
+    #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
+    i=10
+    run_name = "final_run"
     death_mutation = True
     reduced_action_set = True
     run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
