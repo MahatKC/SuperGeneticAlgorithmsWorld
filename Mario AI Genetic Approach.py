@@ -31,7 +31,7 @@ threshold = 100000 #limiar de mutação antes da próxima run
 
 games = 800         #tamanho do cromossomo (numero de ações)
 time_h = 0
-lucro0 = 0
+lucro0 = 0 #Variável para armazenar o fitness
 
 class environment:
     def __init__(self):
