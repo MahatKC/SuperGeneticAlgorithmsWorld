@@ -1,13 +1,9 @@
 #Amanda Israel Graeff Borges, Lucas Veit de Sá e Mateus Karvat Camara
 import numpy as np
 from numpy.random import default_rng
-import time, copy
+import time, copy, sys, random, json
 import pandas as pd
-import random
-import os
-import sys
 from pyboy import PyBoy, WindowEvent
-import json
 from torch.utils.tensorboard import SummaryWriter
 
 #PET PC
@@ -17,7 +13,7 @@ emulation_speed = 5
 
 class environment:
     def __init__(self):
-        #start the game
+        #Ínicio do jogo
         filename = 'roms/Super Mario Land.gb'
         quiet = "--quiet" in sys.argv
         self.pyboy = PyBoy(filename, window_type="headless" if quiet else "SDL2", window_scale=3, debug=quiet, game_wrapper=True)
@@ -29,19 +25,20 @@ class environment:
         self.done= False
         self.time = 10
 
-        assert self.mario.score == 0
-        assert self.mario.lives_left == 2
-        assert self.mario.time_left == 400
+        #Variáveis do jogo
+        assert self.mario.score == 0 #Pontuação
+        assert self.mario.lives_left == 2 #Número restante de vidas
+        assert self.mario.time_left == 400 #Tempo restante
         assert self.mario.world == (1, 1) #stage
-        assert self.mario.fitness == 0 # A built-in fitness score for AI development
+        assert self.mario.fitness == 0 # Avalização de aptidão
         
-        #set state and action size
+        #Salvar estado do jogo e o tamanho do cromossomo
         state_full = np.asarray(self.mario.game_area())
-        np.append(state_full,self.mario.level_progress) #talvez usar o append corretamente
+        np.append(state_full,self.mario.level_progress) 
         self.state_size = state_full.size     
               
     def reset(self):
-        self.mario.reset_game() #back to the last state saved
+        self.mario.reset_game() #Volta para o último estado salvo
         self.done = False
         self.pyboy.tick()
         assert self.mario.lives_left == 2
@@ -51,6 +48,7 @@ class environment:
         
         return state_full
 
+    #Ações que o Mario está restrito
     def step(self,action, reduced_action):
         if not reduced_action:
             if action == 0: # Pular       
@@ -128,7 +126,7 @@ class Network():
         self.generation = 0
         self.death_iteration = 0
 
-        self.lucro = 0
+        self.lucro = 0 #armazena o fitness
 
     def get_actions(self):
         return self.actions
@@ -185,7 +183,7 @@ def fitness(networks, reduced_action):
             if feet_val >= 350:
                 tempo = 2
                 for _ in range(tempo):
-                    env.pyboy.tick() # Progresses the emulator ahead by one frame.
+                    env.pyboy.tick() # Avança um frame
                 
             t = 0.0167 * tempo
             time.sleep(t)
@@ -215,6 +213,7 @@ def selection(networks, population, selection_percentage):
 
     return networks
 
+#Cruzamento sobre um ponto
 def crossover(networks, self_crossover, population, selection_percentage, cromossome_size, death_mutation, reduced_action):
     children = []
     if death_mutation:
@@ -280,9 +279,15 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
     networks.extend(children)
     return networks
 
-def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
+<<<<<<< HEAD
+def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation, reduced_action_set):
     # Mutação
+=======
+# Mutação
+def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
+>>>>>>> 93606ba7c2b262005bb6bf8578aace85229e366e
     num_old_members = int(population*selection_percentage)
+    #Caso ocorra mutação antes da próxima run
     if death_mutation:
         rng = default_rng()
         child1 = list(range(num_old_members,population,4))
@@ -293,15 +298,22 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
         child4 = list(range(num_old_members+3,population,4))
         child3.extend(child4)
         child3.sort()
+        #Seleção da Network que sofrerá mutação 
         mutated_networks = rng.choice(child1, size=int(len(child1)*mutation_probability), replace=False).tolist()
         for network_idx in mutated_networks:
+            #Seleção das ações que sofrerão mutação
             num_genes_mutados = int(cromossome_size*mutation_rate)
             network = networks[network_idx]
+
+            #limiar de mutação antes da próxima run
             death_threshold = int(network.death_iteration*0.9)
             genes_in_death_threshold = np.arange(cromossome_size)[death_threshold:]
             genes_sorteados = rng.choice(genes_in_death_threshold, size=num_genes_mutados, replace=False)
             for gene in genes_sorteados:
-                network.actions[gene] = np.random.randint(10)
+                if reduced_action_set:
+                    network.actions[gene] = np.random.randint(4)
+                else:
+                    network.actions[gene] = np.random.randint(10)
 
         mutated_networks_two = rng.choice(child3, size=int(len(child3)*mutation_probability), replace=False).tolist()
         for network_idx in mutated_networks_two:
@@ -309,7 +321,10 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
             genes_sorteados = rng.choice(cromossome_size, size=num_genes_mutados, replace=False)
             for gene in genes_sorteados:
                 network = networks[network_idx]
-                network.actions[gene] = np.random.randint(10)
+                if reduced_action_set:
+                    network.actions[gene] = np.random.randint(4)
+                else:
+                    network.actions[gene] = np.random.randint(10)
     else:
         rng = default_rng()
         indices_populacao = np.arange(population)[num_old_members:]
@@ -352,7 +367,7 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         #Genetic
         networks = selection(networks, population, selection_percentage)
         networks = crossover(networks, self_crossover, population, selection_percentage, cromossome_size, death_mutation, reduced_action)
-        networks = mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation)
+        networks = mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation, reduced_action)
                 
         max_lucro = np.max(network_lucro)
         media = np.average(network_lucro)
@@ -409,8 +424,8 @@ def main():
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
     cromossome_size_values = [8000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     
-    population = 25
-    generations = 40
+    population = 20
+    generations = 10
     self_crossover = False
     mutation_rate = 0.05
     mutation_probability = 0.5
@@ -420,15 +435,14 @@ def main():
     #death_mutation = True
     #reduced_action_set = False
     #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    #i+=1
     #death_mutation = False
     #reduced_action_set = True
     #run_name = "run"+str(i)
     #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    i=10
-    run_name = "final_run"
-    death_mutation = True
-    reduced_action_set = True
+    i=2
+    run_name = "run"+str(i)
+    death_mutation = False
+    reduced_action_set = False
     run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
     
 
