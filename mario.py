@@ -126,7 +126,7 @@ class Network():
         self.generation = 0
         self.death_iteration = 0
 
-        self.lucro = 0 #armazenar o fitness
+        self.lucro = 0 #armazena o fitness
 
     def get_actions(self):
         return self.actions
@@ -183,7 +183,7 @@ def fitness(networks, reduced_action):
             if feet_val >= 350:
                 tempo = 2
                 for _ in range(tempo):
-                    env.pyboy.tick() # Progresses the emulator ahead by one frame.
+                    env.pyboy.tick() # Avança um frame
                 
             t = 0.0167 * tempo
             time.sleep(t)
@@ -278,8 +278,8 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
     networks.extend(children)
     return networks
 
+# Mutação
 def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
-    # Mutação
     num_old_members = int(population*selection_percentage)
     if death_mutation:
         rng = default_rng()
@@ -291,8 +291,10 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
         child4 = list(range(num_old_members+3,population,4))
         child3.extend(child4)
         child3.sort()
+        #Seleção da Network que sofrerá mutação 
         mutated_networks = rng.choice(child1, size=int(len(child1)*mutation_probability), replace=False).tolist()
         for network_idx in mutated_networks:
+            #Seleção das ações que sofrerão mutação
             num_genes_mutados = int(cromossome_size*mutation_rate)
             network = networks[network_idx]
 
