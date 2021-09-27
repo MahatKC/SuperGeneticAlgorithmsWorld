@@ -26,9 +26,9 @@ class environment:
         self.time = 10
 
         #Variáveis do jogo
-        assert self.mario.score == 0
-        assert self.mario.lives_left == 2
-        assert self.mario.time_left == 400
+        assert self.mario.score == 0 #Pontuação
+        assert self.mario.lives_left == 2 #Número restante de vidas
+        assert self.mario.time_left == 400 #Tempo restante
         assert self.mario.world == (1, 1) #stage
         assert self.mario.fitness == 0 # Avalização de aptidão
         
@@ -213,6 +213,7 @@ def selection(networks, population, selection_percentage):
 
     return networks
 
+#Cruzamento sobre um ponto
 def crossover(networks, self_crossover, population, selection_percentage, cromossome_size, death_mutation, reduced_action):
     children = []
     if death_mutation:
@@ -281,6 +282,7 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
 # Mutação
 def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
     num_old_members = int(population*selection_percentage)
+    #Caso ocorra mutação antes da próxima run
     if death_mutation:
         rng = default_rng()
         child1 = list(range(num_old_members,population,4))
