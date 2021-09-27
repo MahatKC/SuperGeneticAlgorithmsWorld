@@ -1,13 +1,9 @@
 #Amanda Israel Graeff Borges, Lucas Veit de Sá e Mateus Karvat Camara
 import numpy as np
 from numpy.random import default_rng
-import time, copy
+import time, copy, sys, random, json
 import pandas as pd
-import random
-import os
-import sys
 from pyboy import PyBoy, WindowEvent
-import json
 from torch.utils.tensorboard import SummaryWriter
 
 #PET PC
