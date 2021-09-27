@@ -279,13 +279,8 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
     networks.extend(children)
     return networks
 
-<<<<<<< HEAD
 def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation, reduced_action_set):
     # Mutação
-=======
-# Mutação
-def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
->>>>>>> 93606ba7c2b262005bb6bf8578aace85229e366e
     num_old_members = int(population*selection_percentage)
     #Caso ocorra mutação antes da próxima run
     if death_mutation:
