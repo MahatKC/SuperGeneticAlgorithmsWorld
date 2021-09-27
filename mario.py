@@ -151,6 +151,9 @@ def fitness(networks, reduced_action):
         # loop through actions
         vidas = env.mario.lives_left
         action_counter = 0
+
+        print(env.mario)
+
         for act in actions:
             t_act_ini = time.time()
             if action_counter == len(actions)-1:
@@ -191,6 +194,7 @@ def fitness(networks, reduced_action):
             fitness = env.mario.fitness
             
             if env.mario.lives_left < vidas:
+                print(env.mario)
                 network.death_iteration = action_counter
                 done = True
                 break
