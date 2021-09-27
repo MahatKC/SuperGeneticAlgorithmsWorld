@@ -188,6 +188,8 @@ def fitness(networks, reduced_action):
 
             fitness = env.mario.fitness
             
+            fitness = env.mario.fitness
+            
             if env.mario.lives_left < vidas:
                 network.death_iteration = action_counter
                 done = True
