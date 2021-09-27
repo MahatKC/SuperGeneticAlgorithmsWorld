@@ -13,7 +13,7 @@ emulation_speed = 5
 
 class environment:
     def __init__(self):
-        #start the game
+        #Ínicio do jogo
         filename = 'roms/Super Mario Land.gb'
         quiet = "--quiet" in sys.argv
         self.pyboy = PyBoy(filename, window_type="headless" if quiet else "SDL2", window_scale=3, debug=quiet, game_wrapper=True)
@@ -25,19 +25,20 @@ class environment:
         self.done= False
         self.time = 10
 
+        #Variáveis do jogo
         assert self.mario.score == 0
         assert self.mario.lives_left == 2
         assert self.mario.time_left == 400
         assert self.mario.world == (1, 1) #stage
-        assert self.mario.fitness == 0 # A built-in fitness score for AI development
+        assert self.mario.fitness == 0 # Avalização de aptidão
         
-        #set state and action size
+        #Salvar estado do jogo e o tamanho do cromossomo
         state_full = np.asarray(self.mario.game_area())
-        np.append(state_full,self.mario.level_progress) #talvez usar o append corretamente
+        np.append(state_full,self.mario.level_progress) 
         self.state_size = state_full.size     
               
     def reset(self):
-        self.mario.reset_game() #back to the last state saved
+        self.mario.reset_game() #Volta para o último estado salvo
         self.done = False
         self.pyboy.tick()
         assert self.mario.lives_left == 2
@@ -47,6 +48,7 @@ class environment:
         
         return state_full
 
+    #Ações que o Mario está restrito
     def step(self,action, reduced_action):
         if not reduced_action:
             if action == 0: # Pular       
@@ -293,7 +295,7 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
         for network_idx in mutated_networks:
             num_genes_mutados = int(cromossome_size*mutation_rate)
             network = networks[network_idx]
-            
+
             #limiar de mutação antes da próxima run
             death_threshold = int(network.death_iteration*0.9)
             genes_in_death_threshold = np.arange(cromossome_size)[death_threshold:]
