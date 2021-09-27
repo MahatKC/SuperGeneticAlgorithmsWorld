@@ -278,7 +278,7 @@ def crossover(networks, self_crossover, population, selection_percentage, cromos
     networks.extend(children)
     return networks
 
-def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation):
+def mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation, reduced_action_set):
     # Mutação
     num_old_members = int(population*selection_percentage)
     if death_mutation:
@@ -299,7 +299,10 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
             genes_in_death_threshold = np.arange(cromossome_size)[death_threshold:]
             genes_sorteados = rng.choice(genes_in_death_threshold, size=num_genes_mutados, replace=False)
             for gene in genes_sorteados:
-                network.actions[gene] = np.random.randint(10)
+                if reduced_action_set:
+                    network.actions[gene] = np.random.randint(4)
+                else:
+                    network.actions[gene] = np.random.randint(10)
 
         mutated_networks_two = rng.choice(child3, size=int(len(child3)*mutation_probability), replace=False).tolist()
         for network_idx in mutated_networks_two:
@@ -307,7 +310,10 @@ def mutate(networks, mutation_rate, mutation_probability, population, selection_
             genes_sorteados = rng.choice(cromossome_size, size=num_genes_mutados, replace=False)
             for gene in genes_sorteados:
                 network = networks[network_idx]
-                network.actions[gene] = np.random.randint(10)
+                if reduced_action_set:
+                    network.actions[gene] = np.random.randint(4)
+                else:
+                    network.actions[gene] = np.random.randint(10)
     else:
         rng = default_rng()
         indices_populacao = np.arange(population)[num_old_members:]
@@ -350,7 +356,7 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
         #Genetic
         networks = selection(networks, population, selection_percentage)
         networks = crossover(networks, self_crossover, population, selection_percentage, cromossome_size, death_mutation, reduced_action)
-        networks = mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation)
+        networks = mutate(networks, mutation_rate, mutation_probability, population, selection_percentage, cromossome_size, death_mutation, reduced_action)
                 
         max_lucro = np.max(network_lucro)
         media = np.average(network_lucro)
@@ -407,8 +413,8 @@ def main():
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
     cromossome_size_values = [8000] #5000, 10000      #tamanho do cromossomo (numero de ações)
     
-    population = 25
-    generations = 40
+    population = 20
+    generations = 10
     self_crossover = False
     mutation_rate = 0.05
     mutation_probability = 0.5
@@ -418,15 +424,14 @@ def main():
     #death_mutation = True
     #reduced_action_set = False
     #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    #i+=1
     #death_mutation = False
     #reduced_action_set = True
     #run_name = "run"+str(i)
     #run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
-    i=10
-    run_name = "final_run"
-    death_mutation = True
-    reduced_action_set = True
+    i=2
+    run_name = "run"+str(i)
+    death_mutation = False
+    reduced_action_set = False
     run(i, run_name, population, generations, self_crossover, mutation_rate, mutation_probability, selection_percentage, cromossome_size, death_mutation, reduced_action_set)
     
 
