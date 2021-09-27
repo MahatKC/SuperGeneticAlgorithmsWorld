@@ -289,13 +289,13 @@ def run(iteration, run_name, population, generations, self_crossover, mutation_r
     writer.flush()
 
 def main():
-    population_values = [10, 20] #50
-    generations_values = [10, 20, 50] #100
+    population_values = [20] #50
+    generations_values = [100] #100
     self_crossover_values = [True, False]
-    mutation_rate_values = [0.001, 0.01, 0.1] #0.005, 0.05, 0.2
+    mutation_rate_values = [0.1, 0.01, 0.001] #0.005, 0.05, 0.2
     mutation_probability_values = [1, 0.1, 0] #0.5
     selection_percentage_values = [0.2]  #porcentagem dos melhores membros da população que irão pra próxima geração
-    cromossome_size_values = [2000, 5000, 10000]      #tamanho do cromossomo (numero de ações)
+    cromossome_size_values = [5000]      #tamanho do cromossomo (numero de ações)
     run_name="run"
     i=0
     for population in population_values:
