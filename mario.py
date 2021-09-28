@@ -6,9 +6,6 @@ import pandas as pd
 from pyboy import PyBoy, WindowEvent
 from torch.utils.tensorboard import SummaryWriter
 
-#PET PC
-#set PYSDL2_DLL_PATH=C:\Program Files\kdenlive\bin
-
 emulation_speed = 5
 
 class environment:
