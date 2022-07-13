@@ -1,4 +1,4 @@
-# Super-Mario-Land-AI
+# SuperGeneticAlgorithmsWorld
  
 Project developed by  [@MahatKC](https://www.github.com/MahatKC), [@AmandaIsrael](https://www.github.com/AmandaIsrael) and [@spalshzzz](https://github.com/spalshzzz) in 2021.
 
